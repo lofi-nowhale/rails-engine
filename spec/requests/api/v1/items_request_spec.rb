@@ -70,14 +70,14 @@ describe "Items API" do
     expect(item[:data][:attributes][:merchant_id]).to be_an Integer
   end
 
-  it "can create a new item and flash a warning if the item wasn't created" do 
+  it "can create a new item"  do 
     merchant1 = create(:merchant)
 
     item_params = ({
       name: 'Mug',
       description: 'vessel to hold ur bevies',
       unit_price: 10.5,
-      merchant_id: merchant1.id,
+      merchant_id: merchant1.id
     })
 
     headers = {"CONTENT_TYPE" => "application/json"}
@@ -96,19 +96,51 @@ describe "Items API" do
 
   it "can update an item" do 
     merchant1 = create(:merchant)
-    item = create(:item)
+    item = create(:item, merchant_id: merchant1.id)
     previous_name = Item.last.name
-    item_params = { name: 'New Item Name' }
+    item_params = ({ 
+      name: "New Item Name",
+      # description: item.description, 
+      # unit_price: item.unit_price, 
+      merchant_id: merchant1.id 
+    })
     headers = {"CONTENT_TYPE" => "application/json"}
 
-
-    # item1 = Item.create!(name: 'Keyboard', description: "clicky clacky typing typing", unit_price: 100.0, merchant_id: merchant1.id)
-
-    put "/api/v1/items/#{item1.id}"
+    patch "/api/v1/items/#{item.id}", headers: headers, params: JSON.generate({item: item_params})
+    
+    updated_item = Item.find_by(id: item.id)
 
     expect(response).to be_successful
 
+    expect(updated_item.name).to_not eq(previous_name)
+    expect(updated_item.name).to eq("New Item Name") 
+  end
 
-    
+  it "delivers a 4xx code when the item cannot update" do 
+    merchant = create(:merchant)
+    item = create(:item, merchant_id: merchant.id)
+    item_params = ({
+      unit_price: nil
+    })
+
+    headers = {"CONTENT_TYPE" => "application/json"}
+
+    patch "/api/v1/items/#{item.id}", headers: headers, params: JSON.generate({item: item_params})
+
+    expect(response).to_not be_successful
+
+  end
+
+  it "can destroy an item" do 
+    merchant1 = create(:merchant)
+    item = create(:item, merchant_id: merchant1.id)
+
+    expect(Item.count).to eq(1)
+  
+    delete "/api/v1/items/#{item.id}"
+  
+    expect(response).to be_successful
+    expect(Item.count).to eq(0)
+    expect{Item.find(item.id)}.to raise_error(ActiveRecord::RecordNotFound)
   end
 end

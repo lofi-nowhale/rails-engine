@@ -8,13 +8,28 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def create
-    item = Item.create(item_params)
+    item = Item.new(item_params)
     if item.save
+      render json: ItemSerializer.new(Item.last)
       head 201
-      response.body = ItemSerializer.new(Item.last).to_json
     else 
-      head 401
+      401
     end
+  end
+
+  def update
+    item = Item.find(params[:id])
+    
+    if item.update(item_params)
+      render json: ItemSerializer.new(Item.update(params[:id], item_params))
+      head 201
+    else 
+      head 404
+    end
+  end
+
+  def destroy 
+    item = Item.find(params[:id]).destroy
   end
 
   private

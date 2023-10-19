@@ -47,9 +47,9 @@ RSpec.describe "Merchants API" do
     item3_id = create(:item, merchant_id: merchant1.id)
     
     merchant2 = create(:merchant)
-    item4_id = create(:item, merchant_id: merchant1.id)
-    item5_id = create(:item, merchant_id: merchant1.id)
-    item4_id = create(:item, merchant_id: merchant1.id)
+    item4_id = create(:item, merchant_id: merchant2.id)
+    item5_id = create(:item, merchant_id: merchant2.id)
+    item4_id = create(:item, merchant_id: merchant2.id)
 
     get "/api/v1/merchants/#{merchant1.id}/items" 
 
